@@ -1,0 +1,18 @@
+# Fragmento para el application.yml de ms-andesstay-reservations (PRODUCTOR).
+# Pega este bloque "spring.kafka" dentro del application.yml ya existente,
+# respetando la indentacion (no dupliques la clave "spring:" si ya existe).
+
+spring:
+  kafka:
+    # FUERA de Docker (microservicio en el host / EC2):
+    bootstrap-servers: localhost:29092,localhost:39092,localhost:49092
+    # DENTRO de la red Docker, usar en su lugar:
+    # bootstrap-servers: kafka-1:9092,kafka-2:9092,kafka-3:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # Serializa el DTO del evento como JSON:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all                 # confirma solo cuando las replicas en ISR escribieron
+      retries: 3                # reintentos del cliente ante fallos transitorios
+      properties:
+        enable.idempotence: true   # evita duplicados del productor ante reintentos

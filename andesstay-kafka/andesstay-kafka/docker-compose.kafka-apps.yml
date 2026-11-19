@@ -1,0 +1,41 @@
+# docker-compose.kafka-apps.yml
+# Levanta los microservicios Kafka (consumer + admin) y los conecta a la
+# red del cluster Kafka (kafka-net) usando los listeners internos.
+#
+# Requiere que docker-compose.kafka.yml ya este levantado (crea la red kafka-net).
+#
+# Levantar:  docker compose -f docker-compose.kafka-apps.yml up -d --build
+# Ver:       docker compose -f docker-compose.kafka-apps.yml ps
+
+services:
+
+  ms-andesstay-kafka-consumer:
+    build:
+      context: ./ms-andesstay-kafka-consumer     # ajustar a la ruta real
+    container_name: ms-andesstay-kafka-consumer
+    environment:
+      # Override: dentro de Docker se usan los brokers por su nombre interno.
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+    ports:
+      - "8085:8085"
+    networks:
+      - kafka-net
+    restart: unless-stopped
+
+  ms-andesstay-kafka-admin:
+    build:
+      context: ./ms-andesstay-kafka-admin         # ajustar a la ruta real
+    container_name: ms-andesstay-kafka-admin
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+    ports:
+      - "8086:8086"
+    networks:
+      - kafka-net
+    restart: unless-stopped
+
+# Usa la red creada por docker-compose.kafka.yml (external = ya existe)
+networks:
+  kafka-net:
+    external: true
+    name: kafka-net
